@@ -3,43 +3,34 @@ local toghud = true
 local thirst = 0
 local hunger = 0
 
-RegisterCommand('hud', function(source, args, rawCommand)
-
+RegisterNetEvent("hud")
+AddEventHandler("hud", function()
     if toghud then 
         toghud = false
     else
         toghud = true
     end
-
 end)
 
-RegisterNetEvent('bassic_needs:toggleui')
-AddEventHandler('bassic_needs:toggleui', function(show)
-
-    if show == true then
-        toghud = true
-    else
-        toghud = false
+Citizen.CreateThread(function()
+    while true do
+        Citizen.Wait(1000)
+        TriggerServerEvent("bassic_needs:getinfo")
+        local player = PlayerPedId()       
+        SendNUIMessage({
+            action = "updateStatusHud",
+            show = toghud,
+            hunger = hunger,
+            thirst = thirst,
+            stress = 100 - GetPlayerSprintStaminaRemaining(PlayerId()),
+        })
     end
-
 end)
 
-RegisterNetEvent('bassic_needs:hunger')
-AddEventHandler('bassic_needs:hunger', function(hunger)
-    SendNUIMessage({
-        action = "updateStatusHud",
-        show = toghud,
-        hunger = hunger,
-    })
-end)
-
-RegisterNetEvent('bassic_needs:thirst')
-AddEventHandler('bassic_needs:thirst', function(thirst)
-    SendNUIMessage({
-        action = "updateStatusHud",
-        show = toghud,
-        thirst = thirst,
-    })
+RegisterNetEvent("bassic_needs:returnBasics")
+AddEventHandler("bassic_needs:returnBasics", function (rHunger, rThirst)
+    hunger = rHunger
+    thirst = rThirst
 end)
 
 Citizen.CreateThread(function()
@@ -57,15 +48,7 @@ Citizen.CreateThread(function()
             health = health,
             armour = armor,
             oxygen = oxy,
-            stress = 100 - GetPlayerSprintStaminaRemaining(PlayerId()),
         })
         Citizen.Wait(200)
     end
 end)
-
-Citizen.CreateThread(function()
-    while true do
-        Citizen.Wait(100)   
-        TriggerServerEvent('bassic_needs:getinfo')
-    end
-end) 
