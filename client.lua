@@ -12,21 +12,6 @@ AddEventHandler("hud", function()
     end
 end)
 
-Citizen.CreateThread(function()
-    while true do
-        Citizen.Wait(1000)
-        TriggerServerEvent("bassic_needs:getinfo")
-        local player = PlayerPedId()       
-        SendNUIMessage({
-            action = "updateStatusHud",
-            show = toghud,
-            hunger = hunger,
-            thirst = thirst,
-            stress = 100 - GetPlayerSprintStaminaRemaining(PlayerId()),
-        })
-    end
-end)
-
 RegisterNetEvent("bassic_needs:returnBasics")
 AddEventHandler("bassic_needs:returnBasics", function (rHunger, rThirst)
     hunger = rHunger
@@ -34,21 +19,26 @@ AddEventHandler("bassic_needs:returnBasics", function (rHunger, rThirst)
 end)
 
 Citizen.CreateThread(function()
-    while true do
-        Citizen.Wait(1)
+    SetTimeout(20000, function()
+        while true do
+            Citizen.Wait(500)
+            TriggerServerEvent("bassic_needs:getinfo")
 
-        local player = PlayerPedId()
-        local health = (GetEntityHealth(player) - 100)
-        local armor = GetPedArmour(player)
-        local oxy = GetPlayerUnderwaterTimeRemaining(PlayerId()) * 2.5
+            local player = PlayerPedId()
+            local health = (GetEntityHealth(player) - 100)
+            local armor = GetPedArmour(player)
+            local oxy = GetPlayerUnderwaterTimeRemaining(PlayerId()) * 2.5
 
-        SendNUIMessage({
-            action = 'updateStatusHud',
-            show = toghud,
-            health = health,
-            armour = armor,
-            oxygen = oxy,
-        })
-        Citizen.Wait(200)
-    end
+            SendNUIMessage({
+                action = "updateStatusHud",
+                show = toghud,
+                health = health,
+                armour = armor,
+                hunger = hunger,
+                thirst = thirst,
+                oxygen = oxy,
+                stress = 100 - GetPlayerSprintStaminaRemaining(PlayerId()),
+            })
+        end
+    end)
 end)
